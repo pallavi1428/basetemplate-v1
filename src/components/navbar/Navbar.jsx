@@ -13,12 +13,12 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="bg-pink-600 sticky top-0">
+        <nav className="bg-orange-600 sticky top-0">
             <div className="lg:flex lg:justify-between items-center py-3 lg:px-3">
                 {/* Left */}
                 <div className="left py-3 lg:py-0">
                     <Link to="/">
-                        <h2 className="font-bold text-white text-2xl text-center">E-Bharat</h2>
+                        <h2 className="font-bold text-white text-2xl text-center">Handly</h2>
                     </Link>
                 </div>
 
@@ -26,11 +26,11 @@ const Navbar = () => {
                 <div className="right flex justify-center mb-4 lg:mb-0">
                     <ul className="flex space-x-3 text-white font-medium text-md px-5">
                         <li>
-                            <Link to="/">Home</Link>
+                            <Link to="/">Uplaod Notes</Link>
                         </li>
 
                         <li>
-                            <Link to="/allproduct">All Product</Link>
+                            <Link to="/allproduct">Browse Notes</Link>
                         </li>
 
                         {!user && (
