@@ -20,7 +20,7 @@ const ProductInfo = () => {
     const getProductData = async () => {
         setLoading(true);
         try {
-            const productTemp = await getDoc(doc(fireDB, "products", id));
+            const productTemp = await getDoc(doc(fireDB, "notes", id));
             setProduct({ ...productTemp.data(), id: productTemp.id });
         } catch (error) {
             console.error(error);

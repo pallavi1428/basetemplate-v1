@@ -7,12 +7,12 @@ import toast from 'react-hot-toast';
 
 function MyState({ children }) {
     const [loading, setLoading] = useState({
-        products: false,
+        notes: false,
         orders: false,
         users: false
     });
 
-    const [products, setProducts] = useState([]);
+    const [notes, setNotes] = useState([]);
     const [orders, setOrders] = useState([]);
     const [users, setUsers] = useState([]);
 
@@ -20,7 +20,6 @@ function MyState({ children }) {
         setLoading((prev) => ({ ...prev, [key]: value }));
     };
 
-    // ✅ Fixed: Removed async
     const setupSnapshotListener = useCallback((collectionName, setState, key) => {
         updateLoading(key, true);
         try {
@@ -33,7 +32,7 @@ function MyState({ children }) {
                 setState(dataArray);
                 updateLoading(key, false);
             });
-            return unsubscribe; // ✅ Correct: immediately return unsubscribe
+            return unsubscribe;
         } catch (error) {
             console.error(`Error fetching ${collectionName}:`, error);
             toast.error(`Failed to load ${collectionName}`);
@@ -42,8 +41,8 @@ function MyState({ children }) {
         }
     }, []);
 
-    const getAllProducts = useCallback(() =>
-        setupSnapshotListener('products', setProducts, 'products')
+    const getAllNotes = useCallback(() =>
+        setupSnapshotListener('notes', setNotes, 'notes')
     , [setupSnapshotListener]);
 
     const getAllOrders = useCallback(() =>
@@ -68,23 +67,23 @@ function MyState({ children }) {
     , [setupSnapshotListener]);
 
     useEffect(() => {
-        const productUnsubscribe = getAllProducts();
+        const notesUnsubscribe = getAllNotes();
         const orderUnsubscribe = getAllOrders();
         const userUnsubscribe = getAllUsers();
 
         return () => {
-            if (typeof productUnsubscribe === 'function') productUnsubscribe();
+            if (typeof notesUnsubscribe === 'function') notesUnsubscribe();
             if (typeof orderUnsubscribe === 'function') orderUnsubscribe();
             if (typeof userUnsubscribe === 'function') userUnsubscribe();
         };
-    }, [getAllProducts, getAllOrders, getAllUsers]);
+    }, [getAllNotes, getAllOrders, getAllUsers]);
 
     return (
         <MyContext.Provider value={{
             loading,
             setLoading,
-            products,
-            getAllProducts,
+            notes,
+            getAllNotes,
             orders,
             deleteOrder,
             users,
