@@ -1,18 +1,18 @@
 import { useContext, useEffect, useState } from "react";
 import Layout from "../../components/layout/Layout";
 import myContext from "../../context/myContext";
-import { useParams } from "react-router-dom"; // ✅ Updated from 'react-router'
+import { useParams } from "react-router-dom";
 import { fireDB } from "../../firebase/FirebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import Loader from "../../components/loader/Loader";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, deleteFromCart } from "../../redux/cartSlice";
 import toast from "react-hot-toast";
+import Comments from "../../components/comments/Comments";
 
 const ProductInfo = () => {
     const { loading, setLoading } = useContext(myContext);
-    const [product, setProduct] = useState(null); // ✅ Better default
-
+    const [product, setProduct] = useState(null);
     const { id } = useParams();
     const dispatch = useDispatch();
     const cartItems = useSelector((state) => state.cart);
@@ -21,7 +21,16 @@ const ProductInfo = () => {
         setLoading(true);
         try {
             const productTemp = await getDoc(doc(fireDB, "notes", id));
-            setProduct({ ...productTemp.data(), id: productTemp.id });
+            const productData = { ...productTemp.data(), id: productTemp.id };
+            setProduct(productData);
+            
+            // If YouTube URL exists, extract channel info
+            if (productData.youtubeUrl && !productData.youtubeChannelId) {
+                // You would need to implement this function to extract channel info
+                // from YouTube URL using YouTube API or a service
+                // const channelInfo = await extractYouTubeChannelInfo(productData.youtubeUrl);
+                // Then update the product in Firestore with this info
+            }
         } catch (error) {
             console.error(error);
         } finally {
@@ -49,7 +58,7 @@ const ProductInfo = () => {
 
     return (
         <Layout>
-            <section className="py-5 lg:py-16 font-poppins dark:bg-gray-800">
+            <section className="py-5 lg:py-16 font-poppins dark:bg-white-800">
                 {loading ? (
                     <div className="flex justify-center items-center">
                         <Loader />
@@ -57,7 +66,8 @@ const ProductInfo = () => {
                 ) : (
                     product && (
                         <div className="max-w-6xl px-4 mx-auto">
-                            <div className="flex flex-wrap mb-24 -mx-4">
+                            {/* Product Info Section */}
+                            <div className="flex flex-wrap -mx-4">
                                 <div className="w-full px-4 mb-8 md:w-1/2 md:mb-0">
                                     <img
                                         className="w-full lg:h-[39em] rounded-lg"
@@ -68,9 +78,33 @@ const ProductInfo = () => {
                                 <div className="w-full px-4 md:w-1/2">
                                     <div className="lg:pl-20">
                                         <div className="mb-6">
+                                            <div className="flex items-center mb-2">
+                                                {product.youtubeUrl && (
+                                                    <span className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                                                        YouTube Note
+                                                    </span>
+                                                )}
+                                                {product.courseUrl && (
+                                                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                                                        Course Note
+                                                    </span>
+                                                )}
+                                            </div>
                                             <h2 className="max-w-xl mb-6 text-xl font-semibold leading-loose tracking-wide text-gray-700 md:text-2xl dark:text-gray-300">
                                                 {product.title}
                                             </h2>
+                                            
+                                            {product.youtubeChannelName && (
+                                                <div className="flex items-center mb-4">
+                                                    <img 
+                                                        src={product.youtubeChannelImage} 
+                                                        alt={product.youtubeChannelName}
+                                                        className="w-8 h-8 rounded-full mr-2"
+                                                    />
+                                                    <span className="text-sm">{product.youtubeChannelName}</span>
+                                                </div>
+                                            )}
+                                            
                                             <div className="flex flex-wrap items-center mb-6">
                                                 <ul className="flex mb-4 mr-2 lg:mb-0">
                                                     {[...Array(4)].map((_, index) => (
@@ -100,6 +134,19 @@ const ProductInfo = () => {
                                             <p>{product.description}</p>
                                         </div>
 
+                                        {(product.youtubeUrl || product.courseUrl) && (
+                                            <div className="mb-6">
+                                                <a 
+                                                    href={product.youtubeUrl || product.courseUrl}
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline"
+                                                >
+                                                    {product.youtubeUrl ? 'Watch on YouTube' : 'View Course'}
+                                                </a>
+                                            </div>
+                                        )}
+
                                         <div className="flex flex-wrap items-center mb-6">
                                             {cartItems.some((p) => p.id === product.id) ? (
                                                 <button
@@ -119,6 +166,11 @@ const ProductInfo = () => {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Comments Section */}
+                            <div className="px-4 mt-8">
+                                <Comments noteId={id} />
                             </div>
                         </div>
                     )
