@@ -1,108 +1,107 @@
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import { useContext } from 'react';
-import myContext from '../../context/myContext';
-import ProductDetail from '../../components/admin/ProductDetail';
-import OrderDetail from '../../components/admin/OrderDetail';
-import UserDetail from '../../components/admin/UserDetail';
+// src/pages/admin/AdminDashboard.jsx
+
+import React, { useEffect, useState, useContext } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { fireDB } from "../../firebase/FirebaseConfig";
+import myContext from "../../context/myContext";
+import Loader from "../../components/loader/Loader";
+import { Link } from "react-router-dom";
 
 const AdminDashboard = () => {
+    const { loading, setLoading } = useContext(myContext);
+    const [notes, setNotes] = useState([]);
     const user = JSON.parse(localStorage.getItem('users')) || {};
-    const { getAllProduct = [], getAllOrder = [], getAllUser = [] } = useContext(myContext);
 
-    const stats = [
-        {
-            title: "Total Products",
-            count: getAllProduct.length,
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width={50} height={50} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m5 11 4-7" /><path d="m19 11-4-7" /><path d="M2 11h20" />
-                    <path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8c.9 0 1.8-.7 2-1.6l1.7-7.4" />
-                    <path d="m9 11 1 9" /><path d="M4.5 15.5h15" /><path d="m15 11-1 9" />
-                </svg>
-            )
-        },
-        {
-            title: "Total Order",
-            count: getAllOrder.length,
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width={50} height={50} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <line x1={10} x2={21} y1={6} y2={6} /><line x1={10} x2={21} y1={12} y2={12} /><line x1={10} x2={21} y1={18} y2={18} />
-                    <path d="M4 6h1v4" /><path d="M4 10h2" /><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />
-                </svg>
-            )
-        },
-        {
-            title: "Total User",
-            count: getAllUser.length,
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width={50} height={50} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx={9} cy={7} r={4} />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-            )
+    const fetchNotes = async () => {
+        setLoading(true);
+        try {
+            const notesRef = collection(fireDB, "notes");
+            const snapshot = await getDocs(notesRef);
+            const notesData = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            setNotes(notesData);
+        } catch (error) {
+            console.error("Error fetching notes:", error);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    useEffect(() => {
+        fetchNotes();
+    }, []);
 
     return (
         <div className="px-5 mt-5 space-y-5 min-h-screen">
-            {/* Admin Header */}
-            <div className="bg-pink-50 py-5 border border-pink-100 rounded-lg">
-                <h1 className="text-center text-2xl font-bold text-pink-500">Admin Dashboard</h1>
-            </div>
+            {loading ? (
+                <Loader />
+            ) : (
+                <>
+                    {/* Header */}
+                    <div className="bg-pink-50 py-5 border border-pink-100 rounded-lg">
+                        <h1 className="text-center text-2xl font-bold text-pink-500">Admin Dashboard</h1>
+                    </div>
 
-            {/* Admin Profile */}
-            <div className="bg-pink-50 py-5 rounded-xl border border-pink-100">
-                <div className="flex justify-center">
-                    <img
-                        src="https://cdn-icons-png.flaticon.com/128/2202/2202112.png"
-                        alt="Admin avatar"
-                        className="h-20 w-20 rounded-full border border-gray-200 object-cover"
-                        onError={(e) => e.target.src = 'https://via.placeholder.com/80'}
-                    />
-                </div>
-                <div className="space-y-2 mt-4 text-center">
-                    <h1 className="text-lg"><span className="font-bold">Name: </span>{user.name || "N/A"}</h1>
-                    <h1 className="text-lg"><span className="font-bold">Email: </span>{user.email || "N/A"}</h1>
-                    <h1 className="text-lg"><span className="font-bold">Date: </span>{user.date || "N/A"}</h1>
-                    <h1 className="text-lg"><span className="font-bold">Role: </span>{user.role || "N/A"}</h1>
-                </div>
-            </div>
-
-            {/* Stats Tabs */}
-            <Tabs selectedTabClassName="ring-2 ring-pink-300 rounded-xl">
-                <TabList className="flex flex-wrap justify-center gap-4">
-                    {stats.map((stat, index) => (
-                        <Tab
-                            key={index}
-                            className="cursor-pointer w-full sm:w-1/2 md:w-1/3 lg:w-1/4 focus:outline-none"
+                    <div className="flex justify-end">
+                        <Link
+                            to="/addproduct"
+                            className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition-all duration-200"
                         >
-                            <div className="border bg-pink-50 hover:bg-pink-100 border-pink-100 p-4 rounded-xl transition-colors">
-                                <div className="text-pink-500 w-12 h-12 mb-3 mx-auto">
-                                    {stat.icon}
-                                </div>
-                                <h2 className="text-3xl font-medium text-pink-400 text-center">
-                                    {stat.count}
-                                </h2>
-                                <p className="text-pink-500 font-bold text-center">
-                                    {stat.title}
-                                </p>
-                            </div>
-                        </Tab>
-                    ))}
-                </TabList>
+                            Add Product
+                        </Link>
+                    </div>
 
-                <TabPanel>
-                    <ProductDetail />
-                </TabPanel>
-                <TabPanel>
-                    <OrderDetail />
-                </TabPanel>
-                <TabPanel>
-                    <UserDetail />
-                </TabPanel>
-            </Tabs>
+                    {/* Admin Info */}
+                    <div className="bg-pink-50 py-5 rounded-xl border border-pink-100">
+                        <div className="flex justify-center">
+                            <img
+                                src="https://cdn-icons-png.flaticon.com/128/2202/2202112.png"
+                                alt="Admin avatar"
+                                className="h-20 w-20 rounded-full border border-gray-200 object-cover"
+                                onError={(e) => e.target.src = 'https://via.placeholder.com/80'}
+                            />
+                        </div>
+                        <div className="space-y-2 mt-4 text-center">
+                            <h1 className="text-lg"><span className="font-bold">Name: </span>{user.name || "N/A"}</h1>
+                            <h1 className="text-lg"><span className="font-bold">Email: </span>{user.email || "N/A"}</h1>
+                            <h1 className="text-lg"><span className="font-bold">Date: </span>{user.date || "N/A"}</h1>
+                            <h1 className="text-lg"><span className="font-bold">Role: </span>{user.role || "N/A"}</h1>
+                        </div>
+                    </div>
+
+                    {/* Notes Table */}
+                    <div className="overflow-x-auto border rounded-lg bg-white">
+                        <table className="min-w-full text-sm text-gray-600">
+                            <thead className="bg-pink-100 text-pink-600">
+                                <tr>
+                                    <th className="px-4 py-2 text-left">#</th>
+                                    <th className="px-4 py-2 text-left">Title</th>
+                                    <th className="px-4 py-2 text-left">Category</th>
+                                    <th className="px-4 py-2 text-left">Price</th>
+                                    <th className="px-4 py-2 text-left">Users Added to Cart</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {notes.map((note, index) => (
+                                    <tr key={note.id} className="border-b hover:bg-pink-50">
+                                        <td className="px-4 py-2">{index + 1}</td>
+                                        <td className="px-4 py-2">{note.title || "Untitled"}</td>
+                                        <td className="px-4 py-2">{note.category || "N/A"}</td>
+                                        <td className="px-4 py-2">₹{note.price || 0}</td>
+                                        <td className="px-4 py-2">
+                                            {note.addedBy && note.addedBy.length > 0
+                                                ? note.addedBy.join(", ")
+                                                : "Not Tracked"}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
         </div>
     );
 };

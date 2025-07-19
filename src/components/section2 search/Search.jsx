@@ -1,10 +1,11 @@
 import { collection, getDocs } from "firebase/firestore";
 import { fireDB } from "../../firebase/FirebaseConfig";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Search = () => {
     const [youtubeUrl, setYoutubeUrl] = useState("");
-    const [matchedNotes, setMatchedNotes] = useState([]);
+    const navigate = useNavigate();
 
     const handleSearch = async () => {
         if (!youtubeUrl) return;
@@ -18,7 +19,10 @@ const Search = () => {
                     notes.push({ id: doc.id, ...data });
                 }
             });
-            setMatchedNotes(notes);
+
+            // Navigate to /search and pass results as state
+            navigate("/search", { state: { results: notes, url: youtubeUrl } });
+
         } catch (error) {
             console.error("Error fetching notes:", error);
         }
@@ -42,27 +46,6 @@ const Search = () => {
                     Search Notes
                 </button>
             </div>
-
-            {matchedNotes.length > 0 && (
-                <div className="mt-10 max-w-4xl mx-auto grid gap-6 md:grid-cols-2">
-                    {matchedNotes.map((note) => (
-                        <div key={note.id} className="bg-white p-4 rounded shadow">
-                            <img src={note.productImageUrl} alt={note.title} className="w-full h-48 object-cover mb-2 rounded" />
-                            <h3 className="text-lg font-bold">{note.title}</h3>
-                            <p className="text-sm">{note.description}</p>
-                            <p className="text-xs text-gray-500">{note.subject} | {note.grade}</p>
-                            <a
-                                href={note.notesPDFUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-orange-600 underline mt-2 block"
-                            >
-                                View Notes
-                            </a>
-                        </div>
-                    ))}
-                </div>
-            )}
         </div>
     );
 };
