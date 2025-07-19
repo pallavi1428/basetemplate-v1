@@ -26,6 +26,13 @@ const AddProductPage = () => {
   };
 
 const addNoteFunction = async () => {
+  const user = JSON.parse(localStorage.getItem('users'));
+  if (!user) {
+    toast.error("Please login again");
+    navigate('/login');
+    return;
+  }
+
   const { title, description, category } = note;
   if (!title || !description || !category) {
     toast.error("Title, description & category are required");
@@ -34,22 +41,26 @@ const addNoteFunction = async () => {
 
   setLoading(true);
   try {
-    const notesRef = collection(fireDB, 'notes'); // change 'notes' to your actual collection if needed
+    const notesRef = collection(fireDB, 'notes');
     await addDoc(notesRef, {
       ...note,
       price: Number(note.price),
       youtubeURLs: note.youtubeURLs.split(',').map(u => u.trim()),
+      uploaderId: user.uid,
+      uploaderName: user.name || "Anonymous",
+      status: "active",
+      createdAt: Timestamp.now()
     });
     toast.success("Note added successfully ✅");
-    navigate('/admin-dashboard');
+    // Navigate to user-dashboard with tab state
+    navigate('/user-dashboard', { state: { activeTab: 'myNotes' } });
   } catch (error) {
-    console.error("🔥 Firestore Add Error:", error);
+    console.error("Error:", error);
     toast.error(`Error: ${error.message}`);
   } finally {
     setLoading(false);
   }
 };
-
 
   return (
     <div className='flex justify-center items-center min-h-screen px-4'>
