@@ -86,15 +86,23 @@ const AdminDashboard = () => {
                             <tbody>
                                 {notes.map((note, index) => (
                                     <tr key={note.id} className="border-b hover:bg-pink-50">
-                                        <td className="px-4 py-2">{index + 1}</td>
-                                        <td className="px-4 py-2">{note.title || "Untitled"}</td>
-                                        <td className="px-4 py-2">{note.category || "N/A"}</td>
-                                        <td className="px-4 py-2">₹{note.price || 0}</td>
-                                        <td className="px-4 py-2">
-                                            {note.addedBy && note.addedBy.length > 0
-                                                ? note.addedBy.join(", ")
-                                                : "Not Tracked"}
-                                        </td>
+                                    <td className="px-4 py-2">{index + 1}</td>
+                                    <td className="px-4 py-2">{note.title || "Untitled"}</td>
+                                    <td className="px-4 py-2">{note.category || "N/A"}</td>
+                                    <td className="px-4 py-2">₹{note.price || 0}</td>
+                                    <td className="px-4 py-2">
+                                        {note.addedBy && note.addedBy.length > 0
+                                        ? note.addedBy.join(", ")
+                                        : "Not Tracked"}
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <Link
+                                        to={`/updateproduct/${note.id}`}
+                                        className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 transition"
+                                        >
+                                        Update
+                                        </Link>
+                                    </td>
                                     </tr>
                                 ))}
                             </tbody>
